@@ -128,7 +128,7 @@ export function Newsletter() {
                 className="w-full px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white font-mono text-sm placeholder:text-gray-500"
               />
             </div>
-            {!isDevelopment && <div ref={turnstileRef} data-size="compact" className="w-full" />}
+            {!isDevelopment && <div ref={turnstileRef} data-size="flexible" className="w-full" />}
             <button
               type="submit"
               disabled={isSubmitting}
