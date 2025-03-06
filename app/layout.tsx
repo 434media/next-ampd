@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Azeret_Mono as Geist_Mono } from "next/font/google"
+import { GoogleTagManager } from '@next/third-parties/google'
 import "./globals.css"
 
 const geistSans = Geist({
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   authors: [{ name: "AMPD Project" }],
   openGraph: {
     title: "The AMPD Project | Empowering Creativity in Media and Arts",
-    description: "Empowering students and veterans through media and entertainment production.",
+    description: "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
     url: "https://www.ampdproject.org",
     siteName: "The AMPD Project",
     images: [
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The AMPD Project | Empowering Creativity in Media and Arts",
-    description: "Empowering students and veterans through media and entertainment production.",
+    description: "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
     images: ["https://www.ampdproject.org/opengraph-image.png"],
   },
   robots: {
@@ -64,6 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleTagManager gtmId="G-DTC6N178SH" />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   )
