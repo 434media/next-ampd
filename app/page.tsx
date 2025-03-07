@@ -15,7 +15,7 @@ export default function Home() {
       <Navbar />
       <main className="relative z-10">
         {/* Main content with parallax effects */}
-        <ScrollLock duration={1.5}>
+        <ScrollLock duration={0.2}>
           <Hero />
         </ScrollLock>
 

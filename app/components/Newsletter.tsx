@@ -103,8 +103,8 @@ export function Newsletter() {
 
   return (
     <div className="w-full max-w-md">
-      <h2 className="text-3xl font-medium mb-3">Subscribe to our newsletter</h2>
-      <p className="text-gray-400 text-lg mb-6">Stay updated on new releases and features, guides, and case studies.</p>
+      <h2 className="text-3xl text-emerald-600 font-medium mb-3">Subscribe to our newsletter</h2>
+      <p className="text-gray-300 text-lg mb-6">Stay updated on new releases and features, guides, and case studies.</p>
       <AnimatePresence mode="wait">
         {!isSuccess ? (
           <motion.form
