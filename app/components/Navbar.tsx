@@ -11,11 +11,6 @@ export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const backgroundColor = useTransform(
-    scrollY,
-    [0, 100],
-    [isScrolled ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.8)"],
-  )
   const blur = useTransform(scrollY, [0, 100], [0, 8])
   const rotateX = useTransform(scrollY, [0, 100], [0, -2])
   const translateY = useTransform(scrollY, [0, 100], [0, -5])
@@ -29,9 +24,8 @@ export const Navbar = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 w-full flex justify-center items-center p-4 z-50 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 w-full flex justify-center items-center p-4 z-50 transition-all duration-300 bg-black/5 backdrop-blur-lg shadow-lg"
       style={{
-        backgroundColor,
         backdropFilter: `blur(${blur.get()}px)`,
         rotateX,
         y: translateY,

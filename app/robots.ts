@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/private/",
     },
-    sitemap: "https://www.ampdproject.org/sitemap.xml",
+    sitemap: "https://www.ampdproject.com/sitemap.xml",
   }
 }
 

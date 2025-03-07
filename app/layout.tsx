@@ -23,11 +23,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "The AMPD Project | Empowering Creativity in Media and Arts",
     description: "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
-    url: "https://www.ampdproject.org",
+    url: "https://www.ampdproject.com",
     siteName: "The AMPD Project",
     images: [
       {
-        url: "https://www.ampdproject.org/opengraph-image.png",
+        url: "https://www.ampdproject.com/opengraph-image.png",
         width: 1200,
         height: 630,
       },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "The AMPD Project | Empowering Creativity in Media and Arts",
     description: "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
-    images: ["https://www.ampdproject.org/opengraph-image.png"],
+    images: ["https://www.ampdproject.com/opengraph-image.png"],
   },
   robots: {
     index: true,
