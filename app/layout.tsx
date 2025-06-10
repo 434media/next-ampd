@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { GoogleTagManager } from "@next/third-parties/google"
+import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
@@ -69,8 +69,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <GoogleTagManager gtmId="G-Q13T53WY1W" />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Google Analytics */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-Q13T53WY1W" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-Q13T53WY1W');
+          `}
+        </Script>
+
         <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
         <Analytics />
       </body>
