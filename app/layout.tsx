@@ -1,8 +1,9 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Azeret_Mono as Geist_Mono } from "next/font/google"
-import { GoogleTagManager } from '@next/third-parties/google'
-import { Analytics } from '@vercel/analytics/next';
+import { Geist, Geist_Mono } from "next/font/google"
+import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google"
+import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -23,7 +24,8 @@ export const metadata: Metadata = {
   authors: [{ name: "AMPD Project" }],
   openGraph: {
     title: "The AMPD Project | Empowering Creativity in Media and Arts",
-    description: "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
+    description:
+      "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
     url: "https://www.ampdproject.com",
     siteName: "The AMPD Project",
     images: [
@@ -39,7 +41,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The AMPD Project | Empowering Creativity in Media and Arts",
-    description: "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
+    description:
+      "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
     images: ["https://www.ampdproject.com/opengraph-image.png"],
   },
   robots: {
@@ -66,12 +69,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <GoogleTagManager gtmId="G-DTC6N178SH" />
+      <GoogleTagManager gtmId="G-Q13T53WY1W" />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
         <Analytics />
       </body>
     </html>
   )
 }
-
