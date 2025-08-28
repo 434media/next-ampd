@@ -11,7 +11,6 @@ export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const blur = useTransform(scrollY, [0, 100], [0, 8])
   const rotateX = useTransform(scrollY, [0, 100], [0, -2])
   const translateY = useTransform(scrollY, [0, 100], [0, -5])
 
@@ -24,9 +23,10 @@ export const Navbar = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 w-full flex justify-center items-center p-4 z-50 transition-all duration-300 bg-black/5 backdrop-blur-lg shadow-lg"
+      className={`fixed top-0 left-0 right-0 w-full flex justify-center items-center p-4 z-50 transition-all duration-300 backdrop-blur-lg shadow-lg ${
+        isScrolled ? "bg-black/80" : "bg-black/60"
+      }`}
       style={{
-        backdropFilter: `blur(${blur.get()}px)`,
         rotateX,
         y: translateY,
         transformStyle: "preserve-3d",
@@ -41,7 +41,7 @@ export const Navbar = () => {
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`transition-all duration-300 ${isScrolled ? "opacity-100" : "opacity-80"}`}
+            className={`transition-all duration-300 ${isScrolled ? "opacity-100" : "opacity-90"}`}
           >
             <Image
               src="https://ampd-asset.s3.us-east-2.amazonaws.com/Ampd_Logo_Full.svg"
@@ -81,7 +81,7 @@ export const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-black bg-opacity-90 p-4"
+            className="absolute top-full left-0 right-0 bg-black/90 backdrop-blur-lg p-4"
           >
             <SocialIcons />
           </motion.div>
@@ -103,38 +103,70 @@ const SocialIcons = () => {
       onBlur={() => setIsHovered(false)}
     >
       <motion.div
-        className="text-white text-sm md:text-base font-semibold cursor-pointer"
+        className="text-white text-sm md:text-base font-semibold cursor-pointer px-4 py-2 rounded-lg"
         animate={{
-          filter: isHovered ? "blur(4px)" : "blur(0px)",
           opacity: isHovered ? 0 : 1,
+          scale: isHovered ? 0.9 : 1,
         }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
       >
         Stay Connected
       </motion.div>
+
       <AnimatePresence>
         {isHovered && (
           <motion.div
-            className="absolute top-0 left-0 right-0 flex justify-between items-center"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
+            className="absolute top-0 left-0 right-0 flex justify-center items-center space-x-3 px-4 py-2"
+            initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            exit={{ opacity: 0, scale: 0.8, rotateY: 15 }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+              staggerChildren: 0.1,
+            }}
           >
             {social.map((link, index) => (
               <motion.a
                 key={index}
                 href={link.href}
-                className="text-white hover:text-emerald-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-black rounded-full p-2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-emerald-400 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-black rounded-full p-2 bg-white/10 backdrop-blur-sm hover:bg-emerald-500/20"
                 aria-label={link.name}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-                whileHover={{ scale: 1.2 }}
+                initial={{
+                  scale: 0,
+                  opacity: 0,
+                  y: 20,
+                  rotateX: -90,
+                }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  y: 0,
+                  rotateX: 0,
+                }}
+                exit={{
+                  scale: 0,
+                  opacity: 0,
+                  y: -20,
+                  rotateX: 90,
+                }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.08,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15,
+                }}
+                whileHover={{
+                  scale: 1.2,
+                  y: -2,
+                  transition: { duration: 0.2 },
+                }}
                 whileTap={{ scale: 0.95 }}
               >
-                {link.icon({ className: "w-6 h-6" })}
+                {link.icon({ className: "w-5 h-5" })}
               </motion.a>
             ))}
           </motion.div>
@@ -147,7 +179,7 @@ const SocialIcons = () => {
 const social = [
   {
     name: "Email",
-    href: "mailto:info@ampdproject",
+    href: "mailto:info@ampdproject.org",
     icon: (props: React.SVGProps<SVGSVGElement>) => (
       <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 -960 960 960" {...props}>
         <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160zm320-280L160-640v400h640v-400L480-440zm0-80l320-200H160l320 200zM160-640v-80 480-400z" />
@@ -182,4 +214,3 @@ const social = [
     ),
   },
 ]
-
