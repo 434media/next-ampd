@@ -1,14 +1,40 @@
-import { Navbar } from "./components/Navbar"
-import Hero from "./components/Hero"
-import { About } from "./components/About"
-import { Donate } from "./components/Donate"
-import { Footer } from "./components/Footer"
-import { ParallaxContainer } from "./components/ParallaxContainer"
-import { ScrollLock } from "./components/ScrollLock"
-import { ParallaxSection } from "./components/ParallaxSection"
-import BackgroundVideo from "./components/BackgroundVideo"
+"use client"
+
+import { useState, useEffect } from "react"
+import { Navbar } from "../components/Navbar"
+import Hero from "../components/Hero"
+import { About } from "../components/About"
+import { Donate } from "../components/Donate"
+import { Footer } from "../components/Footer"
+import { ParallaxContainer } from "../components/ParallaxContainer"
+import { ScrollLock } from "../components/ScrollLock"
+import { ParallaxSection } from "../components/ParallaxSection"
+import BackgroundVideo from "../components/BackgroundVideo"
+import NewsletterPopup from "../components/NewsletterPopup"
 
 export default function Home() {
+  const [showNewsletterPopup, setShowNewsletterPopup] = useState(false)
+
+  useEffect(() => {
+    // Check if user has already seen the popup
+    const hasSeenPopup = localStorage.getItem("ampd-newsletter-popup-seen")
+
+    if (!hasSeenPopup) {
+      // Show popup after 3 seconds
+      const timer = setTimeout(() => {
+        setShowNewsletterPopup(true)
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
+  const handleClosePopup = () => {
+    setShowNewsletterPopup(false)
+    // Mark as seen so it doesn't show again
+    localStorage.setItem("ampd-newsletter-popup-seen", "true")
+  }
+
   return (
     <>
       <BackgroundVideo />
@@ -32,7 +58,9 @@ export default function Home() {
         </ParallaxSection>
       </main>
       <Footer />
+
+      {/* Newsletter Popup */}
+      <NewsletterPopup showModal={showNewsletterPopup} onClose={handleClosePopup} />
     </>
   )
 }
-

@@ -4,17 +4,6 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 
-// Extend the Window interface to include the turnstile property
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (element: HTMLElement, options: { sitekey: string; callback: (token: string) => void }) => string;
-      getResponse: (widgetId: string) => string | null;
-      reset: (widgetId: string) => void;
-    };
-  }
-}
-
 const isDevelopment = process.env.NODE_ENV === "development"
 
 export function Newsletter() {
@@ -38,15 +27,18 @@ export function Newsletter() {
           const widgetId = window.turnstile.render(turnstileRef.current, {
             sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "",
             callback: (token: string) => {
-              console.log("Turnstile token:", token)
+              console.log("Turnstile token received:", token)
             },
+            "refresh-expired": "auto",
           })
           setTurnstileWidget(widgetId)
         }
       }
 
       return () => {
-        document.body.removeChild(script)
+        if (document.body.contains(script)) {
+          document.body.removeChild(script)
+        }
       }
     }
   }, [turnstileWidget])
@@ -55,6 +47,8 @@ export function Newsletter() {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
+
+    console.log("Starting newsletter submission...")
 
     try {
       let turnstileResponse = undefined
@@ -68,7 +62,12 @@ export function Newsletter() {
         if (!turnstileResponse) {
           throw new Error("Failed to get Turnstile response")
         }
+        console.log("Turnstile response obtained")
+      } else {
+        console.log("Development mode - skipping Turnstile")
       }
+
+      console.log("Sending request to /api/newsletter...")
 
       const response = await fetch("/api/newsletter", {
         method: "POST",
@@ -79,16 +78,17 @@ export function Newsletter() {
         body: JSON.stringify({ email }),
       })
 
+      console.log("Response status:", response.status)
+
       const responseData = await response.json()
+      console.log("Response data:", responseData)
 
       if (response.ok) {
         setEmail("")
         setIsSuccess(true)
         setTimeout(() => setIsSuccess(false), 5000) // Reset success state after 5 seconds
-        if (!isDevelopment && turnstileWidget) {
-          if (window.turnstile) {
-            window.turnstile.reset(turnstileWidget)
-          }
+        if (!isDevelopment && turnstileWidget && window.turnstile) {
+          window.turnstile.reset(turnstileWidget)
         }
       } else {
         throw new Error(responseData.error || "Newsletter subscription failed")
@@ -128,7 +128,7 @@ export function Newsletter() {
                 className="w-full px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white font-mono text-sm placeholder:text-gray-500"
               />
             </div>
-            {!isDevelopment && <div ref={turnstileRef} data-size="flexible" className="w-full" />}
+            {!isDevelopment && <div ref={turnstileRef} data-size="flexible" data-theme="dark" className="w-full" />}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -152,4 +152,3 @@ export function Newsletter() {
     </div>
   )
 }
-
