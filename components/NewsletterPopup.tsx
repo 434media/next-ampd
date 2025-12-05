@@ -164,7 +164,7 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-4xl bg-gradient-to-br from-gray-900 to-black border border-emerald-500/20 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto rounded-lg"
+          className="relative w-full max-w-4xl bg-linear-to-br from-gray-900 to-black border border-emerald-500/20 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto rounded-lg"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -179,7 +179,7 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
           <div className="flex flex-col lg:flex-row min-h-[600px]">
             {/* Left Side - Image */}
             <div className="lg:w-1/2 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-black/40 z-10" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-emerald-500/10 to-black/40 z-10" />
               <Image
                 src="https://ampd-asset.s3.us-east-2.amazonaws.com/ampd-newsletter.png"
                 alt="AMPD Project Creative Community"
@@ -191,8 +191,8 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
 
             {/* Right Side - Newsletter Form */}
             <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center relative overflow-hidden">
-              {/* Background gradient animation */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent" />
+              {/* Background linear animation */}
+              <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 to-transparent" />
 
               <div className="relative z-10">
                 {/* Header with Logo */}

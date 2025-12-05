@@ -17,7 +17,7 @@ export const About = () => {
       rotateX: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut",
+        ease: [0.22, 0.61, 0.36, 1] as [number, number, number, number],
       },
     },
   }

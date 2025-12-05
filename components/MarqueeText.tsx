@@ -50,7 +50,7 @@ export const MarqueeText = ({ text, speed = 20, className = "" }: MarqueeTextPro
       return (
         <span
           key={index}
-          className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500"
+          className="font-bold text-transparent bg-clip-text bg-linear-to-r from-yellow-400 via-red-500 to-pink-500"
           aria-label="Newsletter (emphasized)"
         >
           {word}{" "}
@@ -58,7 +58,7 @@ export const MarqueeText = ({ text, speed = 20, className = "" }: MarqueeTextPro
       )
     }
     return (
-      <span key={index} className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-600">
+      <span key={index} className="text-transparent bg-clip-text bg-linear-to-r from-emerald-300 to-emerald-600">
         {word}{" "}
       </span>
     )
