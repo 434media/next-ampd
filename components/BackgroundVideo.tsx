@@ -7,9 +7,9 @@ const BackgroundVideo = () => {
           muted
           playsInline
           className="absolute w-full h-full object-cover"
-          poster="https://ampd-asset.s3.us-east-2.amazonaws.com/ampd-poster.png"
+          poster="https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/ampd-poster.png"
         >
-          <source src="https://ampd-asset.s3.us-east-2.amazonaws.com/ampd.mp4" type="video/mp4" />
+          <source src="https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/ampd.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <div className="absolute inset-0 bg-neutral-950 opacity-50"></div>

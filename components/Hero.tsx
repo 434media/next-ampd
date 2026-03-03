@@ -53,7 +53,7 @@ const Hero = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        videoSrc="https://ampd-asset.s3.us-east-2.amazonaws.com/ampd.mp4"
+        videoSrc="https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/ampd.mp4"
       />
     </section>
   )

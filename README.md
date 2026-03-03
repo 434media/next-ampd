@@ -8,7 +8,7 @@ This is the official website for The AMPD Project, a veteran-founded 501(c)(3) n
 *   [TypeScript](https://www.typescriptlang.org/) - Typed JavaScript
 *   [Tailwind CSS](https://tailwindcss.com/) - Utility-First CSS Framework
 *   [Motion](https://motion.dev/) - Animation Library
-*   [Airtable](https://airtable.com/) - Backend for Newsletter Subscriptions
+*   [Google Firestore](https://firebase.google.com/docs/firestore) - Backend for Newsletter Subscriptions
 *   [Vercel](https://vercel.com/) - Deployment Platform
 
 ## Getting Started
@@ -41,13 +41,8 @@ Make sure you have Node.js (version 20 or later) and npm installed on your machi
     Create a `.env.local` file in the root of your project and add the following variables. These are necessary for the newsletter functionality.
 
     ```env
-    # Airtable Credentials
-    AIRTABLE_BASE_ID=your_airtable_base_id
-    AIRTABLE_API_KEY=your_airtable_api_key
-
-    # Cloudflare Turnstile Keys
-    NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
-    TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+    # Google Service Account (Firestore)
+    GOOGLE_SERVICE_ACCOUNT_KEY=your_service_account_json
     ```
 
 4.  **Run the development server**

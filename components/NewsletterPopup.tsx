@@ -1,13 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { X } from "lucide-react"
 import Image from "next/image"
 import { FooterLogo } from "./FooterLogo"
-
-const isDevelopment = process.env.NODE_ENV === "development"
 
 interface NewsletterPopupProps {
   showModal: boolean
@@ -19,57 +17,11 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const turnstileRef = useRef<HTMLDivElement>(null)
-  const [turnstileWidget, setTurnstileWidget] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Email validation regex pattern
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-
-  // Load Turnstile script only when needed
-  useEffect(() => {
-    if (isDevelopment || turnstileWidget || !showModal) return
-
-    const loadTurnstile = () => {
-      if (document.getElementById("turnstile-script")) return
-
-      const script = document.createElement("script")
-      script.id = "turnstile-script"
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js"
-      script.async = true
-      script.defer = true
-      document.body.appendChild(script)
-
-      script.onload = () => {
-        if (window.turnstile && turnstileRef.current) {
-          const widgetId = window.turnstile.render(turnstileRef.current, {
-            sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "",
-            callback: () => {
-              // Token received, no action needed here
-            },
-            "refresh-expired": "auto",
-            theme: "dark",
-            size: "flexible",
-          })
-          setTurnstileWidget(widgetId)
-        }
-      }
-    }
-
-    loadTurnstile()
-
-    return () => {
-      // Clean up widget when component unmounts
-      if (turnstileWidget && window.turnstile) {
-        try {
-          window.turnstile.reset(turnstileWidget)
-        } catch (error) {
-          console.error("Error resetting Turnstile widget:", error)
-        }
-      }
-    }
-  }, [turnstileWidget, showModal])
 
   const validateEmail = (email: string): boolean => {
     return emailPattern.test(email)
@@ -97,24 +49,10 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
     setIsSubmitting(true)
 
     try {
-      let turnstileResponse = undefined
-
-      if (!isDevelopment) {
-        if (!window.turnstile || !turnstileWidget) {
-          throw new Error("Security verification not loaded. Please refresh and try again.")
-        }
-
-        turnstileResponse = window.turnstile.getResponse(turnstileWidget)
-        if (!turnstileResponse) {
-          throw new Error("Please complete the security verification")
-        }
-      }
-
       const response = await fetch("/api/newsletter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(turnstileResponse && { "cf-turnstile-response": turnstileResponse }),
         },
         body: JSON.stringify({ email }),
       })
@@ -133,10 +71,6 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
           onClose()
         }, 3000)
 
-        // Reset Turnstile if needed
-        if (!isDevelopment && turnstileWidget && window.turnstile) {
-          window.turnstile.reset(turnstileWidget)
-        }
       } else {
         throw new Error(responseData.error || "Failed to subscribe to newsletter")
       }
@@ -181,7 +115,7 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
             <div className="lg:w-1/2 relative overflow-hidden">
               <div className="absolute inset-0 bg-linear-to-r from-transparent via-emerald-500/10 to-black/40 z-10" />
               <Image
-                src="https://ampd-asset.s3.us-east-2.amazonaws.com/ampd-newsletter.png"
+                src="https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/ampd-newsletter.png"
                 alt="AMPD Project Creative Community"
                 fill
                 className="object-cover"
@@ -296,14 +230,6 @@ export default function NewsletterPopup({ showModal, onClose }: NewsletterPopupP
                           {isSubmitting ? "Subscribing..." : "Subscribe to Newsletter"}
                         </motion.div>
                       </motion.button>
-
-                      {!isDevelopment && (
-                        <div
-                          ref={turnstileRef}
-                          className="w-full flex justify-center mt-6"
-                          aria-label="Security verification"
-                        />
-                      )}
 
                       {error && (
                         <motion.div

@@ -44,7 +44,7 @@ export const Navbar = () => {
             className={`transition-all duration-300 ${isScrolled ? "opacity-100" : "opacity-90"}`}
           >
             <Image
-              src="https://ampd-asset.s3.us-east-2.amazonaws.com/Ampd_Logo_Full.svg"
+              src="https://storage.googleapis.com/groovy-ego-462522-v2.firebasestorage.app/Ampd_Logo_Full.svg"
               alt="AMPD logo"
               width={80}
               height={32}
