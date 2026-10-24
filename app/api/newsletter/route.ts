@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server"
 import { checkBotId } from "botid/server"
 import { initializeApp, getApps, cert } from "firebase-admin/app"
 import { getFirestore, FieldValue } from "firebase-admin/firestore"
-import axios from "axios"
 import crypto from "crypto"
 
 // Initialize Firebase Admin SDK
@@ -24,6 +23,26 @@ const mailchimpListId = process.env.MAILCHIMP_AUDIENCE_ID
 
 const mailchimpDatacenter = mailchimpApiKey ? mailchimpApiKey.split("-").pop() : null
 
+const NEWSLETTER_TAGS = ["web-ampdproject", "newsletter-signup"]
+
+type MailchimpResult = { status: number; json: boolean; data: { title?: string } | null }
+
+// Calls the Mailchimp API with native fetch. Errors never carry the request,
+// so the API key cannot end up in a log line the way an axios error's config did.
+async function mailchimp(path: string, method: "POST" | "PUT", body: unknown): Promise<MailchimpResult> {
+  const res = await fetch(`https://${mailchimpDatacenter}.api.mailchimp.com/3.0/lists/${mailchimpListId}${path}`, {
+    method,
+    headers: {
+      Authorization: `Basic ${Buffer.from(`apikey:${mailchimpApiKey}`).toString("base64")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  })
+  const json = (res.headers.get("content-type") ?? "").includes("json")
+  const data = json && res.status !== 204 ? await res.json().catch(() => null) : null
+  return { status: res.status, json, data }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify the request is not from a bot
@@ -43,44 +62,26 @@ export async function POST(request: NextRequest) {
     const firestorePromise = db.collection("newsletter_signups").add({
       email,
       source: "AMPD",
-      tags: ["web-ampdproject", "newsletter-signup"],
+      tags: NEWSLETTER_TAGS,
       subscribedAt: FieldValue.serverTimestamp(),
     })
 
-    const promises: Promise<any>[] = [firestorePromise]
+    const promises: Promise<unknown>[] = [firestorePromise]
 
     if (mailchimpEnabled) {
-      console.log(
-        "[v0] Mailchimp API URL:",
-        `https://${mailchimpDatacenter}.api.mailchimp.com/3.0/lists/${mailchimpListId}/members`,
-      )
-
-      const mailchimpPromise = axios.post(
-        `https://${mailchimpDatacenter}.api.mailchimp.com/3.0/lists/${mailchimpListId}/members`,
-        {
+      promises.push(
+        mailchimp("/members", "POST", {
           email_address: email,
           status: "subscribed",
-          tags: ["web-ampdproject", "newsletter-signup"],
-        },
-        {
-          auth: {
-            username: "apikey",
-            password: mailchimpApiKey,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-          validateStatus: (status) => status < 500, // Don't throw on 4xx errors
-        },
+          tags: NEWSLETTER_TAGS,
+        }),
       )
-
-      promises.push(mailchimpPromise)
     }
 
     const results = await Promise.allSettled(promises)
 
     const firestoreResult = results[0]
-    const mailchimpResult = mailchimpEnabled ? results[1] : null
+    const mailchimpResult = mailchimpEnabled ? (results[1] as PromiseSettledResult<MailchimpResult>) : null
 
     const errors = []
 
@@ -89,44 +90,38 @@ export async function POST(request: NextRequest) {
       errors.push("Firestore subscription failed")
     }
 
-    if (mailchimpEnabled && mailchimpResult && mailchimpResult.status === "rejected") {
-      console.error("Mailchimp error:", mailchimpResult.reason)
-
-      const error = mailchimpResult.reason
-      if (error?.response?.data) {
-        const responseData = error.response.data
-        if (typeof responseData === "string" && responseData.includes("<!DOCTYPE")) {
-          console.error("Mailchimp returned HTML error page - likely authentication issue")
+    if (mailchimpEnabled && mailchimpResult) {
+      if (mailchimpResult.status === "rejected") {
+        // A network failure; the reason carries no request details.
+        console.error("Mailchimp request failed:", String(mailchimpResult.reason))
+        errors.push("Mailchimp subscription failed")
+      } else {
+        const { status, json, data } = mailchimpResult.value
+        if (status >= 200 && status < 300) {
+          // Subscribed.
+        } else if (!json) {
+          console.error(`Mailchimp returned a non-JSON ${status} response - likely an authentication issue`)
           errors.push("Mailchimp authentication failed")
-        } else if (responseData?.title === "Member Exists") {
-          console.log("Email already exists in Mailchimp, updating tags")
-          // Try to update existing member with tags
+        } else if (data?.title === "Member Exists") {
+          // Already on the list: add the tags to the existing member. Tags on an
+          // existing member are set through the member's tags endpoint.
+          const emailHash = crypto.createHash("md5").update(String(email).toLowerCase()).digest("hex")
           try {
-            const emailHash = crypto.createHash("md5").update(email.toLowerCase()).digest("hex")
-            await axios.patch(
-              `https://${mailchimpDatacenter}.api.mailchimp.com/3.0/lists/${mailchimpListId}/members/${emailHash}`,
-              {
-                tags: ["web-ampdproject", "newsletter-signup"],
-              },
-              {
-                auth: {
-                  username: "apikey",
-                  password: mailchimpApiKey,
-                },
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              },
-            )
+            const tagged = await mailchimp(`/members/${emailHash}/tags`, "POST", {
+              tags: NEWSLETTER_TAGS.map((name) => ({ name, status: "active" })),
+            })
+            if (tagged.status >= 300) {
+              console.error(`Mailchimp tag update returned ${tagged.status}`)
+              errors.push("Mailchimp update failed")
+            }
           } catch (updateError) {
-            console.error("Failed to update existing Mailchimp member:", updateError)
+            console.error("Mailchimp tag update failed:", String(updateError))
             errors.push("Mailchimp update failed")
           }
         } else {
+          console.error(`Mailchimp subscription returned ${status}: ${data?.title ?? "unknown error"}`)
           errors.push("Mailchimp subscription failed")
         }
-      } else {
-        errors.push("Mailchimp subscription failed")
       }
     }
 
