@@ -3,20 +3,25 @@ import { checkBotId } from "botid/server"
 import { initializeApp, getApps, cert } from "firebase-admin/app"
 import { getFirestore, FieldValue } from "firebase-admin/firestore"
 import crypto from "crypto"
+import { isKeyless, keylessFirestore } from "@/lib/gcp-keyless"
 
-// Initialize Firebase Admin SDK
-const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY
-if (!serviceAccountKey) {
-  throw new Error("GOOGLE_SERVICE_ACCOUNT_KEY is not defined")
+// Firestore: keyless (Vercel OIDC, see lib/gcp-keyless) when its variables are
+// set; otherwise the GOOGLE_SERVICE_ACCOUNT_KEY path exactly as before.
+function getDb() {
+  if (isKeyless()) return keylessFirestore()
+  const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY
+  if (!serviceAccountKey) {
+    throw new Error("GOOGLE_SERVICE_ACCOUNT_KEY is not defined")
+  }
+  if (!getApps().length) {
+    initializeApp({
+      credential: cert(JSON.parse(serviceAccountKey)),
+    })
+  }
+  return getFirestore()
 }
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(JSON.parse(serviceAccountKey)),
-  })
-}
-
-const db = getFirestore()
+const db = getDb()
 
 const mailchimpApiKey = process.env.MAILCHIMP_API_KEY
 const mailchimpListId = process.env.MAILCHIMP_AUDIENCE_ID
