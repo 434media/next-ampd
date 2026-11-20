@@ -15,7 +15,6 @@ export function Newsletter() {
     setIsSubmitting(true)
     setError(null)
 
-    console.log("Starting newsletter submission...")
 
     try {
       const response = await fetch("/api/newsletter", {
@@ -26,10 +25,8 @@ export function Newsletter() {
         body: JSON.stringify({ email }),
       })
 
-      console.log("Response status:", response.status)
 
       const responseData = await response.json()
-      console.log("Response data:", responseData)
 
       if (response.ok) {
         setEmail("")

@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.ampdproject.com"),
   title: "The AMPD Project | Empowering Creativity in Media and Arts",
   description:
     "The Art, Music, Photography/Film, and Design (AMPD) Project is a veteran-founded 501(c)(3) non-profit organization dedicated to empowering students and veterans through their passion for media and entertainment production.",
