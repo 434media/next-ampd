@@ -48,6 +48,16 @@ async function mailchimp(path: string, method: "POST" | "PUT", body: unknown): P
   return { status: res.status, json, data }
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Only a short, well-formed email string is stored or sent to Mailchimp.
+function normalizeEmail(value: unknown): string | null {
+  if (typeof value !== "string") return null
+  const email = value.trim().toLowerCase()
+  if (email.length > 254 || !EMAIL_PATTERN.test(email)) return null
+  return email
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify the request is not from a bot
@@ -56,7 +66,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 })
     }
 
-    const { email } = await request.json()
+    // Reject oversized bodies before parsing: a signup is one short email.
+    const length = Number(request.headers.get("content-length") ?? 0)
+    if (length > 2048) {
+      return NextResponse.json({ error: "Request too large" }, { status: 413 })
+    }
+
+    const body = await request.json().catch(() => null)
+    const email = normalizeEmail(body?.email)
+    if (!email) {
+      return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 })
+    }
 
     const mailchimpEnabled = mailchimpApiKey && mailchimpListId
     if (!mailchimpEnabled) {
@@ -110,7 +130,7 @@ export async function POST(request: NextRequest) {
         } else if (data?.title === "Member Exists") {
           // Already on the list: add the tags to the existing member. Tags on an
           // existing member are set through the member's tags endpoint.
-          const emailHash = crypto.createHash("md5").update(String(email).toLowerCase()).digest("hex")
+          const emailHash = crypto.createHash("md5").update(email).digest("hex")
           try {
             const tagged = await mailchimp(`/members/${emailHash}/tags`, "POST", {
               tags: NEWSLETTER_TAGS.map((name) => ({ name, status: "active" })),
@@ -132,22 +152,10 @@ export async function POST(request: NextRequest) {
 
     const totalServices = mailchimpEnabled ? 2 : 1
     if (errors.length < totalServices) {
-      return NextResponse.json(
-        {
-          message: "Newsletter subscription successful",
-          warnings: errors.length > 0 ? errors : undefined,
-          mailchimpEnabled,
-        },
-        { status: 200 },
-      )
+      // Partial failures are logged above; the caller learns nothing about the backends.
+      return NextResponse.json({ message: "Newsletter subscription successful" }, { status: 200 })
     } else {
-      return NextResponse.json(
-        {
-          error: mailchimpEnabled ? "Both services failed" : "Firestore service failed",
-          details: errors,
-        },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: "An error occurred while subscribing to the newsletter" }, { status: 500 })
     }
   } catch (error) {
     console.error("Error subscribing to newsletter:", error)
